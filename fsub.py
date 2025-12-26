@@ -28,26 +28,28 @@ def build_join_keyboard(
     done_callback_data: str,
 ) -> InlineKeyboardMarkup:
     rows: list[list[InlineKeyboardButton]] = []
-
-    # tombol join (unlimited)
     buf: list[InlineKeyboardButton] = []
+
     for idx, t in enumerate(targets, start=1):
-        # URL join:
-        # - kalau @username => https://t.me/username
-        # - kalau -100id => butuh invite link; kalau private wajib kamu isi yg @username / link publik
-        if str(t).startswith("@"):
+        t = str(t).strip()
+
+        if t.startswith("@"):
             url = f"https://t.me/{t.lstrip('@')}"
+        elif t.startswith("https://t.me/") or t.startswith("http://t.me/"):
+            # invite link / public link langsung
+            url = t
         else:
-            # fallback: tidak ideal untuk private ID-only
+            # fallback (kalau kamu tetep maksa isi -100xxxx)
             url = "https://t.me/"
+
         buf.append(InlineKeyboardButton(f"{join_text} {idx}", url=url))
 
         if len(buf) >= buttons_per_row:
             rows.append(buf)
             buf = []
+
     if buf:
         rows.append(buf)
 
-    # tombol sudah join
     rows.append([InlineKeyboardButton("✅ Sudah Join", callback_data=done_callback_data)])
     return InlineKeyboardMarkup(rows)
